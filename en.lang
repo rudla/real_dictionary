@@ -1,0 +1,15 @@
+== cases ==
+-- count
+#	; many
+1   ; one
+
+-- gender
+^  ; man (he)
++  ; woman  (she)
+@  ; thing  (it)
+
+-- case
+what
+who
+
+== words ==

@@ -1,0 +1,21 @@
+﻿== cases ==
+-- cislo
+1   ; jeden
+#	; několik
+
+-- rod
+^  ; mužský 
++  ; ženský 
+@  ; střední
+
+-- pad
+kdo           ;1. kdo, co
+čí            ;2. koho, čeho
+komu          ;3. komu, čemu
+co            ;4. koho, co
+
+-- cas
+min
+bud
+prit
+
