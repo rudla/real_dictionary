@@ -1,15 +1,24 @@
 == cases ==
 -- count
-#	; many
 1   ; one
+#	; many
 
 -- gender
+@  ; thing  (it)
 ^  ; man (he)
 +  ; woman  (she)
-@  ; thing  (it)
 
 -- case
 what
 who
 
-== words ==
+== classes ==
+Verb: ; be, have, do, work
+Noun: ;  man, town, music
+Adjective: ;  big, red, expensive
+Adverb: ;  loudly, well, often
+Determiner: ;  a/an, the, 69, my
+Pronoun: ;  you, ours, some
+Preposition: ;  at, in, on, from
+Conjunction: ;  and, but, though
+Interjection: ;  ah, dear, er, um

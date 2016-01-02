@@ -4,6 +4,8 @@ void main()
 {
 	Language lang;
 	Dictionary dict;
+	SentenceState state;
+	int word_cat, word_idx;
 
 	PrintInit();
 
@@ -13,6 +15,9 @@ void main()
 	LangPrint(&lang);
 	DictInit(&dict, &lang);
 	DictLoad(&dict, "cs.dict");
+
+	DictFindWord(&dict, "mu\xC5\xBEi", 6, &word_cat, &word_idx, &state);
+	DictFindWord(&dict, "vid\xC3\xADm", 6, &word_cat, &word_idx, &state);
 
 	DictTest(&dict, "cs.test");
 

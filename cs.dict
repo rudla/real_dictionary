@@ -1,13 +1,17 @@
 ﻿== words ==
 -- podst <cislo><rod><pad> 
 man: <^>muž<čí>-e<komu>-i<co>-e<#><kdo>-i<čí>-ů<komu>-ům<co>-e
-woman: <+>žen-a<čí>-y<komu>-ě<co>-u<#><kdo>-y<čí>-n<komu>-ám<co>-y 
+woman: <+>žen-a<čí>-y<komu>-ě<co>-u<#><kdo>-y<čí>-<komu>-ám<co>-y 
 child: <@>dítě<čí>-te<komu>-ti<co>-<#><kdo>dět-i<čí>-í<komu>-em<co>-i
 printer: <+>tiskárn-a<co>-u<#><kdo>-y <co>-y
 computer: <^>počítač<čí>-e<#><čí>-ů
 
 -- prid <cislo><rod><pad>
 young: mlad-ý<co>-ého<#>-é<1+><kdo>-á<co>-ou<#><co>-é
+
+-- slov <osoba><cislo><cas><zpusob><rod><vid>
+
+see: <co><1><on>vidí<já>-m<ty>-š
 
 == sentences ==
 i_see: Vidím <1><co>%^A%B %A.

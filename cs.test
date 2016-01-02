@@ -1,9 +1,9 @@
+i_see, man, young   :  Vidím mladého muže.
+i_see, woman, young: Vidím mladou ženu.
 i see young, man: Vidím mladého muže.
 i see young, woman: Vidím mladou ženu.
 i see n, woman, young, 1: Vidím 3 mladé ženy.
 i see n, woman, young, 3: Vidím 3 mladé ženy.
-i_see, man, young   :  Vidím mladého muže.
-i_see, woman, young: Vidím mladou ženu.
 how_many_is_here, man: Kolik je tady mužù?
 
 is young, man: Je mladý?

@@ -1,21 +1,42 @@
 ﻿== cases ==
--- cislo
-1   ; jeden
-#	; několik
+-- number
+1           ; jednotné (jeden)
+#	        ; množné   (několik)
 
--- rod
-^  ; mužský 
-+  ; ženský 
-@  ; střední
+-- gender
+^           ; mužský 
++           ; ženský 
+@           ; střední
 
 -- pad
-kdo           ;1. kdo, co
+kdo           ;1. kdo, co      (mladý muž, mladý stát, mladá žena, mladé zvíře)
 čí            ;2. koho, čeho
 komu          ;3. komu, čemu
 co            ;4. koho, co
+osl           ;5. oslovení
+o             ;6. (o) kom, (o) čem
+kým           ;7. kým, čím
 
 -- cas
-min
-bud
-prit
+prit        ; přítomný
+min			; minulý
+bud         ; budoucí
 
+-- osoba
+já		;v mn. my
+ty		;vy
+on		;oni
+
+-- vid
+dokon		;dokonavý
+nedokon		;nedokonavý
+
+-- zpusob
+=           ;oznamovací
+!           ;rozkayovací
+?           ;tázací
+
+== classes ==
+podst: <number><gender><pad> 
+prid: <number><gender><pad>
+slov: <osoba><number><cas><zpusob><gender><vid>

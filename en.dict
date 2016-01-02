@@ -1,0 +1,19 @@
+﻿== words ==
+-- noun 
+man: <^>man<#>men
+woman: <+>woman<#>women 
+child: <@>child<#>children
+printer: <@>printer<#>-s
+computer: <@>computer<#>-s
+
+he: he<^>-<+>she<@>it<#>they
+
+-- adjective <cislo><rod><pad>
+young: young
+
+== sentences ==
+i_see: I see an %B %A.
+how_many_is_here: How many <#>%A are here?
+i see n: I see %1 %B %A.
+i see young: I see young %A.
+is young: Is %^A`he young?

@@ -56,41 +56,53 @@ void LangInit(Language * lang)
 {
 	lang->category_count = 0;
 	lang->set_count_fn = LangSetCount;
+	lang->word_class_count = 0;
 }
 
 void LangPrint(Language * lang)
 {
-	int cid, i;
+	UInt8 cid, i;
 	GrammaticalCategory * cat;
 	for(cid = 0; cid < lang->category_count; cid++) {
 		cat = &lang->categories[cid];
-		printf("-- %s (%d) --\n", cat->name, cat->case_count);
-		for(i=1; i<=cat->case_count; i++) {
-			printf("%s\n", cat->cases[i]);
+		printf("-- %s (%d) --\n", cat->name, cat->grammeme_count);
+		for(i=1; i<=cat->grammeme_count; i++) {
+			printf("%s\n", cat->grammemes[i]);
 		}
 		printf("\n");
 	}
 }
 
-
-int LangAddCaseCategory(Language * lang, char * name)
+UInt8 LangAddGrammaticalCategory(Language * lang, Text name)
 {
-	int category;
+	UInt8 category;
 	category = lang->category_count;
 	lang->categories[category].name = StrAlloc(name);
-	lang->categories[category].case_count = 0;
-	lang->categories[category].cases[0] = NULL;
+	lang->categories[category].grammeme_count = 0;
+	lang->categories[category].grammemes[0] = NULL;
 	lang->category_count++;
 	return category;
 }
 
-void LangAddCase(Language * lang, int category, char * txt)
+UInt8 LangFindGrammaticalCategory(Language * lang, Text name)
+{
+	UInt8 cid;
+	GrammaticalCategory * cat;
+	for(cid = 0; cid < lang->category_count; cid++) {
+		cat = &lang->categories[cid];
+		if (strcmp(name, cat->name) == 0) return cid;
+	}
+	PrintFmt("Error: Unknown grammatical category '%s'\n", name);
+	return 0;
+}
+
+void LangAddGrammeme(Language * lang, int category, Text txt)
 {
 	GrammaticalCategory * cat = &lang->categories[category];
-	char * c;
+	Text c;
 	c = StrAlloc(txt);
-	cat->case_count++;
-	cat->cases[cat->case_count] = c;
+	cat->grammeme_count++;
+	cat->grammemes[cat->grammeme_count] = c;
 }
 
 Bool LangFindCase(Language * lang, char * txt, int * p_category, int * p_case)
@@ -99,8 +111,8 @@ Bool LangFindCase(Language * lang, char * txt, int * p_category, int * p_case)
 	GrammaticalCategory * cat;
 	for (category = 0; category<lang->category_count; category++) {
 		cat = &lang->categories[category];
-		for(i=1; i <= cat->case_count; i++) {
-			if (strcmp(txt, cat->cases[i]) == 0) {
+		for(i=1; i <= cat->grammeme_count; i++) {
+			if (strcmp(txt, cat->grammemes[i]) == 0) {
 				*p_category = category;
 				*p_case = i;
 				return true;
@@ -109,6 +121,36 @@ Bool LangFindCase(Language * lang, char * txt, int * p_category, int * p_case)
 	}
 	return false;
 }
+
+UInt8 LangAddWordClass(Language * lang, Text txt)
+{
+	Text p, s;
+	UInt8 cat;
+	UInt8 idx = lang->word_class_count;
+	WordClass * wcls = &lang->word_classes[idx];
+
+	s = p = SkipSpaces(txt);
+	while(*p != 0 && *p != ':') p++;
+	wcls->name = StrAllocLen(s, p-s);
+	wcls->used_categories_count = 0;
+
+	if (*p != 0) {
+		p = SkipSpaces(p+1);
+		while(*p == '<') {
+			p++;
+			s = p;
+			while(*p!='>' && *p!=0) p++;
+			*p = 0;
+			cat = LangFindGrammaticalCategory(lang, s);
+			wcls->used_categories[wcls->used_categories_count] = cat;
+			wcls->used_categories_count++;
+			p = SkipSpaces(p+1);
+		}
+	}
+
+	return idx;
+}
+
 
 void LangLoad(Language * lang, char * file)
 {
@@ -125,7 +167,7 @@ void LangLoad(Language * lang, char * file)
 		CutEnd(line, '\n');
 		if (strcmp(line, "== cases ==") == 0) {
 			mode = 1;
-		} else if (strcmp(line, "== word types ==") == 0) {
+		} else if (strcmp(line, "== classes ==") == 0) {
 			mode = 2;
 		} else {
 			switch(mode) {
@@ -133,13 +175,19 @@ void LangLoad(Language * lang, char * file)
 				if (line[0] == '-' && line[1] == '-') {
 					c = line+2;
 					while(*c == ' ') c++;
-					category = LangAddCaseCategory(lang, c);
+					category = LangAddGrammaticalCategory(lang, c);
 				} else {
 					CutEnd(line, ';');
 					if (*line != 0) {
-						LangAddCase(lang, category, line);
+						LangAddGrammeme(lang, category, line);
 					}
 				}
+				break;
+			case 2:
+				CutEnd(line, ';');
+				if (*line != 0) {
+					LangAddWordClass(lang, line);
+				}					
 				break;
 			}
 		}
@@ -223,7 +271,6 @@ char * FindByKey(char ** list, int count, char * key)
 		}
 	}
 	return NULL;
-
 }
 
 char * DictEncodeText(Dictionary * dict, char * text)
@@ -238,7 +285,6 @@ char * DictEncodeText(Dictionary * dict, char * text)
 	char id[40];
 	char buf[ENCODE_BUF_SIZE];
 	unsigned char c;
-//	Language * lang = dict->lang;
 
 	i = 0;
 	p = text;
@@ -346,13 +392,13 @@ void OutPrint(void * ctx, char * text, int len)
 void SentenceStateInit(SentenceState * state)
 {
 	int i;
-	for(i=0; i<CAT_COUNT; i++) state->state[i] = 0;
+	for(i=0; i<MAX_CAT_COUNT; i++) state->state[i] = 0;
 }
 
 int SentenceStateCmp(SentenceState * state1, SentenceState * state2)
 {
 	int i;
-	for(i=0; i<CAT_COUNT; i++) {
+	for(i=0; i<MAX_CAT_COUNT; i++) {
 		if (state1->state[i] != 255 && state1->state[i] != state2->state[i]) return 0;
 	}
 	return 1;
@@ -360,10 +406,73 @@ int SentenceStateCmp(SentenceState * state1, SentenceState * state2)
 
 int IsGroupChar(char c)
 {
-	return c >= CAT_FIRST_CHAR && c < CAT_FIRST_CHAR+CAT_COUNT;
+	return c >= CAT_FIRST_CHAR && c < CAT_FIRST_CHAR+MAX_CAT_COUNT;
 }
 
-void FormatWord(char * word, Language * lang, SentenceState * state, void (*out_fn)(void * ctx, char * text, int len), void * ctx)
+int DictFindWord(Dictionary * dict, char * word, UInt16 word_len, int * p_word_cat, int * p_word_idx, SentenceState * state)
+{
+	char * p;
+	char key[128];
+	char buf[128];
+	UInt8 key_len;
+	UInt32 i;
+	char c;
+	UInt8 prefix_len, wlen;
+	int category, gcase;
+	
+	SentenceStateInit(state);
+
+	for(i = 1; i <= dict->word_count; i++) {
+		p = dict->words[i];
+		
+		// copy key to separate buffer and skip it
+		key_len = 0;
+		while(*p != ':') {
+			key[key_len] = *p++;
+			key_len++;
+		}
+		key[key_len] = 0;
+		p++;
+
+		while(*p == 32) p++;
+
+		prefix_len = 0; wlen = 0;
+
+		do {
+			while (IsGroupChar(*p)) {
+				category = *p++ - CAT_FIRST_CHAR;
+				gcase = *p++ - 1;
+				state->state[category] = gcase;
+			}
+			wlen = 0;
+
+			while(*p != 0 && !IsGroupChar(*p)) {
+				c = *p++;
+				if (c == '-') {
+					if (prefix_len == 0) {
+						prefix_len = wlen;
+					} else {
+						wlen = prefix_len;
+					}
+				} else {
+					buf[wlen] = c;
+					wlen++;
+				}
+			}
+			buf[wlen] = 0;
+
+			if (prefix_len == 0) prefix_len = wlen;
+
+			Print(buf);
+			PrintEOL();
+
+		} while(*p != 0);
+
+	}
+	return false;
+}
+
+void FormatWord(char * word, Language * lang, SentenceState * state,  DictOutFn out_fn, void * ctx)
 {
 	char * p;
 	char buf[128];
@@ -376,7 +485,7 @@ void FormatWord(char * word, Language * lang, SentenceState * state, void (*out_
 
 	p = word;
 
-	// Cases defined at the beginning of the word are set both to state and compared state
+	// grammemes defined at the beginning of the word are set both to state and compared state
 	while(IsGroupChar(*p)) {
 		category = *p++ - CAT_FIRST_CHAR;
 		gcase = *p++ - 1;
@@ -386,7 +495,7 @@ void FormatWord(char * word, Language * lang, SentenceState * state, void (*out_
 
 	prefix_len = 0;		
 	wlen = 0;
-	while(!IsGroupChar(*p)) {
+	while(*p != 0 && !IsGroupChar(*p)) {
 		if (*p == '-') {
 			prefix_len = wlen;
 		} else {
@@ -422,11 +531,11 @@ void FormatWord(char * word, Language * lang, SentenceState * state, void (*out_
 	out_fn(ctx, buf2, wlen);
 }
 
-void FormatText(char * text_key, Dictionary * dict, char * text_arguments[], int * num_args, void (*out_fn)(void * ctx, char * text, int len), void * ctx)
+void FormatText(char * text_key, Dictionary * dict, char * text_arguments[], int * num_args,  DictOutFn out_fn, void * ctx)
 /*
-   <>     grammatical cases required for a text argument (as defined by the language)
+   <>     grammatical grammemes required for a text argument (as defined by the language)
    %A-Z   insert specified word argument
-   %^A-Z  insert grammatical cases implied by specified argument
+   %^A-Z  insert grammatical grammemes implied by specified argument
 */
 {
 	char * p, * p2;
@@ -447,7 +556,7 @@ void FormatText(char * text_key, Dictionary * dict, char * text_arguments[], int
 
 //	p = encoded;
 	for(; ;) {
-		for(p2 = p; *p2 != 0 && (*p2 < CAT_FIRST_CHAR || *p2 >= CAT_FIRST_CHAR+CAT_COUNT) && *p2 != '%' && *p2 != WORD_CHR; p2++);
+		for(p2 = p; *p2 != 0 && (*p2 < CAT_FIRST_CHAR || *p2 >= CAT_FIRST_CHAR+MAX_CAT_COUNT) && *p2 != '%' && *p2 != WORD_CHR; p2++);
 		if (p2 != p) out_fn(ctx, p, p2 - p);
 		p = p2;
 		c = *p++;
@@ -467,14 +576,18 @@ void FormatText(char * text_key, Dictionary * dict, char * text_arguments[], int
 			} else if (c>='A' && c<='Z') {
 				targ = text_arguments[c-'A'];
 				p2 = FindByKey(dict->words, dict->word_count, targ);
-				if (act == 0) {
-					FormatWord(p2, dict->lang, &state, out_fn, ctx);
-				} else if (act == 1) {
-					while(IsGroupChar(*p2)) {
-						category = *p2++;
-						gcase = *p2++ - 1;
-						state.state[category-CAT_FIRST_CHAR] = gcase;
+				if (p2 != NULL) {
+					if (act == 0) {
+						FormatWord(p2, dict->lang, &state, out_fn, ctx);
+					} else if (act == 1) {
+						while(IsGroupChar(*p2)) {
+							category = *p2++;
+							gcase = *p2++ - 1;
+							state.state[category-CAT_FIRST_CHAR] = gcase;
+						}
 					}
+				} else {
+					PrintFmt("Error: Word '%s' not found.", targ);
 				}
 			}
 		} else if (c == WORD_CHR) {
@@ -497,12 +610,13 @@ void FormatText(char * text_key, Dictionary * dict, char * text_arguments[], int
 *********************************************************/
 //$T
 
-void OutMem(void * ctx, char * text, int len)
+int OutMem(void * ctx, char * text, int len)
 {
 	char ** p_p = ctx;
 	char * p = *p_p;
 	while(len-->0) *p++ = *text++;
 	*p_p = p;
+	return 0;
 }
 
 void DictTest(Dictionary * dict, char * filename)
