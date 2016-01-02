@@ -48,6 +48,8 @@ extern void * MemAllocEmpty(long size);
 
 // String management
 
+typedef char * Text;
+
 char * StrAlloc(char * str);
 char * StrAllocLen(char * str, UInt16 len);
 #define StrCopy(dest, src) strcpy(dest, src);
@@ -130,5 +132,8 @@ void PathParent(char * path);
 void PathMerge(char * path, char * dirname, char * filename);
 void GetApplicationDir(char * name, char * path);
 void PathCutExtension(char * path, char * ext);
+
+FILE * FileOpenReadUTF8(char * filename);
+char * SkipSpaces(char * s);
 
 #endif

@@ -378,3 +378,28 @@ void PrintFmt(char * text, ...)
 	va_end(argp);
 	Print(buffer);
 }
+
+FILE * FileOpenReadUTF8(char * filename)
+{
+	FILE * f;
+	unsigned char buf[3];
+	f = fopen(filename, "r");
+
+	if (f != NULL) {
+		// Skip BOM
+		if (fread(buf, 1, 3, f) == 3) {
+			if (buf[0] == 0xEF && buf[1] == 0xBB && buf[2] == 0xBF) {
+
+			} else {
+				fseek(f, 0, SEEK_SET);
+			}
+		}
+	}
+	return f;
+}
+
+char * SkipSpaces(char * s)
+{
+	while(*s == ' ') s++;
+	return s;
+}
