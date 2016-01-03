@@ -7,8 +7,6 @@
 #define MAX_GRAMMEME_COUNT 64		// Maximum number of grammemes in category
 #define MAX_WORD_CLASS_COUNT 64
 
-#define CAT_FIRST_CHAR 1
-
 // https://en.wikipedia.org/wiki/Grammatical_category
 
 typedef UInt8 Grammeme;

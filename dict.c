@@ -80,7 +80,7 @@ char * FindByKey(char ** list, int count, char * key)
 
 char * DictEncodeText(Dictionary * dict, char * text)
 /*
-<case>   specify change of grammatical change
+<case>   specify change of grammatical category (grammeme).
 'word    specified word must be specified in dictionary and will be changed according to current sentence state
 */
 {
@@ -167,8 +167,9 @@ void DictLoad(Dictionary * dict, char * filename)
 
 	while (!feof(f)) {
 		fgets(line, sizeof(line), f);
-		CutEnd(line, '\n');
-		if (strcmp(line, "== words ==") == 0) {
+		CutEnd(line, ';');
+		if (*line == 0) {
+		} else if (strcmp(line, "== words ==") == 0) {
 			mode = 1;
 		} else if (strcmp(line, "== sentences ==") == 0) {
 			mode = 2;
@@ -255,11 +256,15 @@ int DictFindWord(Dictionary * dict, char * word, UInt16 word_len, int * p_word_c
 			while(*p != 0 && !IsGroupChar(*p)) {
 				c = *p++;
 				if (c == '-') {
-					if (prefix_len == 0) {
-						prefix_len = wlen;
-					} else {
-						wlen = prefix_len;
-					}
+//					if (prefix_len == 0) {
+//						prefix_len = wlen;
+//					} else {
+						if (wlen != 0) {
+							prefix_len = wlen;		// if we are in the middle of the word, this is new prefix
+						} else {
+							wlen = prefix_len;
+						}
+//					}
 				} else {
 					buf[wlen] = c;
 					wlen++;

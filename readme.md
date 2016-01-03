@@ -11,7 +11,7 @@ Appropriate variant of the word will be used when used as an argument in text.
 Language definition
 ===================
 
-Language is defined in .lang file, which is UTF-8 encoded text file with BOM character.
+Language is defined in `.lang` file, which is UTF-8 encoded text file with BOM character.
 ; can be used to introduce comments.
 
 ```

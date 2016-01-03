@@ -1,4 +1,4 @@
-﻿== cases ==
+﻿== categories ==
 -- number
 1           ; jednotné (jeden)
 #	        ; množné   (několik)
@@ -40,3 +40,6 @@ nedokon		;nedokonavý
 podst: <number><gender><pad> 
 prid: <number><gender><pad>
 slov: <osoba><number><cas><zpusob><gender><vid>
+
+== suffixes
+

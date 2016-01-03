@@ -149,7 +149,7 @@ void LangLoad(Language * lang, char * file)
 	while (!feof(f)) {
 		fgets(line, sizeof(line), f);
 		CutEnd(line, '\n');
-		if (strcmp(line, "== cases ==") == 0) {
+		if (strcmp(line, "== categories ==") == 0) {
 			mode = 1;
 		} else if (strcmp(line, "== classes ==") == 0) {
 			mode = 2;

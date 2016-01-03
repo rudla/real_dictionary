@@ -3,6 +3,8 @@
 
 #include "lang.h"
 
+#define CAT_FIRST_CHAR 1		// first character used to encode grammatical category
+
 typedef struct {
 	Language * lang;
 
