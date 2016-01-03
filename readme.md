@@ -8,7 +8,35 @@ The defined gramemmes may be specified in the text and in the definitions of wor
 Appropriate variant of the word will be used when used as an argument in text.   
 
 
+Language definition
+===================
 
+Language is defined in .lang file, which is UTF-8 encoded text file with BOM character.
+; can be used to introduce comments.
+
+```
+== categories ==
+-- category 1
+grammeme 1
+grammeme 2
+...
+-- category 2
+
+== classes ==
+class1: <case 1><case 2> 
+```
+
+Grammatical categories
+----------------------
+Grammatical categories are defined in `categories` section.
+
+https://en.wikipedia.org/wiki/Grammatical_category
+
+Word classes
+------------
+Word classes (like noun, verb, adjective, adverb, pronoun, preposition) are defined in `classes` section.
+
+ 
 
 Cases are stored as special codes in text. They are stripped off when generating the text.
  
