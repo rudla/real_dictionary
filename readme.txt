@@ -1,4 +1,11 @@
-﻿We need a way to correctly create variable texts in different languages.
+﻿This is library that is able to format texts in languages with rich morphology and complex compounding.
+You may define language and it's word classes and grammatical cases and their possible values (gramemmes).
+The defined gramemmes may be specified in the text and in the definitions of words, that may be inserted into text.
+
+Appropriate variant of the word will be used when used as an argument in text.   
+
+
+
 
 Cases are stored as special codes in text. They are stripped off when generating the text.
  
