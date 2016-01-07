@@ -2,6 +2,8 @@
 
 #define ENCODE_BUF_SIZE 1024
 #define WORD_CHR 31
+#define SUFFIX_CHR 127
+
 
 int IsAlpha(unsigned char c)
 {
@@ -78,13 +80,13 @@ char * FindByKey(char ** list, int count, char * key)
 	return NULL;
 }
 
-char * DictEncodeText(Dictionary * dict, char * text)
+char * LangEncodeText(Language * lang, Dictionary * dict, char * text)
 /*
 <case>   specify change of grammatical category (grammeme).
 'word    specified word must be specified in dictionary and will be changed according to current sentence state
 */
 {
-	int i, j, wid;
+	int i, j, wid, suffix;
 	GrammaticalCategory category;
 	Grammeme grammeme;
 	char * p;
@@ -96,28 +98,21 @@ char * DictEncodeText(Dictionary * dict, char * text)
 	p = text;
 	while((c = *p++) != 0) {
 		if (c == '<') {
-			while((c = *p++) != 0 && c != '>') {
-				j = 0;
-				if (IsAlpha(c)) {
-					do {
-						id[j++] = c;
-						c = *p++;
-					} while(IsAlpha(c));
-					p--;
-				} else {
-					id[0] = c;
-					j = 1;
-				}
-				id[j] = 0;
-				if (LangFindGrammeme(dict->lang, id, &category, &grammeme)) {
-					if (i > ENCODE_BUF_SIZE-2) goto overrun;
-					buf[i++] = category+CAT_FIRST_CHAR;		// 1..16 is category character
-					buf[i++] = grammeme;					// to prevent 0
-				} else {
-					printf("Unknown case '%s'\n", id);
-				}
+			j = 0;
+			while((c = *p++) && c != '>') id[j++] = c;			
+			id[j] = 0;
+			if (LangFindGrammeme(lang, id, &category, &grammeme)) {
+				if (i > ENCODE_BUF_SIZE-2) goto overrun;
+				buf[i++] = category+CAT_FIRST_CHAR;		// 1..16 is category character
+				buf[i++] = grammeme;					// to prevent 0
+			} else if (LangFindSuffix(lang, id, &suffix)) {
+				buf[i++] = SUFFIX_CHR;
+				ASSERT(suffix < 128); // TODO: Encode as UTF-8 character
+				buf[i++] = suffix+1;
+			} else {
+				printf("Unknown case '%s'\n", id);
 			}
-		} else if (c == '`') {
+		} else if (dict != NULL && c == '`') {
 			j = 0;
 			while(IsAlpha(*p)) {
 				id[j++] = *p++;
@@ -142,7 +137,7 @@ void DictAddWord(Dictionary * dict, char * word)
 {
 	char * encoded;
 	if (*word == 0) return;
-	encoded = DictEncodeText(dict, word);
+	encoded = LangEncodeText(dict->lang, dict, word);
 	dict->word_count++;
 	dict->words[dict->word_count] = encoded;
 }
@@ -151,7 +146,7 @@ void DictAddSentence(Dictionary * dict, char * sentence)
 {
 	char * encoded;
 	if (*sentence == 0) return;
-	encoded = DictEncodeText(dict, sentence);
+	encoded = LangEncodeText(dict->lang, dict, sentence);
 	dict->sentence_count++;
 	dict->sentences[dict->sentence_count] = encoded;
 }
@@ -161,6 +156,8 @@ void DictLoad(Dictionary * dict, char * filename)
 	unsigned char line[256];
 	FILE * f;
 	int  mode = 0;
+	WordClass word_class;
+	Text s;
 
 	f = FileOpenReadUTF8(filename);
 	if (f == NULL) return;
@@ -177,6 +174,11 @@ void DictLoad(Dictionary * dict, char * filename)
 			switch(mode) {
 			case 1:
 				if (line[0] == '-' && line[1] == '-') {
+					s = SkipSpaces(line + 2);
+					if (!LangFindWordClass(dict->lang, s, &word_class)) {
+						printf("Error: Unknown Word class '%s'", s);
+						return;
+					}
 				} else {
 					DictAddWord(dict, line);
 				}
@@ -307,6 +309,9 @@ void FormatWord(char * word, Language * lang, SentenceState * state,  DictOutFn 
 	prefix_len = 0;		
 	wlen = 0;
 	while(*p != 0 && !IsGroupChar(*p)) {
+		if (*p == SUFFIX_CHR) {
+			p = lang->suffixes[p[1]-1].txt;
+		}
 		if (*p == '-') {
 			prefix_len = wlen;
 		} else {
@@ -319,8 +324,12 @@ void FormatWord(char * word, Language * lang, SentenceState * state,  DictOutFn 
 	if (prefix_len == 0) prefix_len = wlen;
 
 	strcpy(buf2, buf);
+
 	while(!SentenceStateCmp(&state2, state)) {
-		if (*p == 0) break;
+		if (*p == SUFFIX_CHR) {
+			p = lang->suffixes[p[1]-1].txt;
+		}
+		if (*p == 0) break;		//TODO: This word is not right
 		while(IsGroupChar(*p) && *p != 0) {
 			category = *p++;
 			state2.state[category-CAT_FIRST_CHAR] = *p++ - 1;
@@ -334,7 +343,12 @@ void FormatWord(char * word, Language * lang, SentenceState * state,  DictOutFn 
 			wlen = 0;
 		}
 
-		while(*p != 0 && !IsGroupChar(*p)) buf2[wlen++] = *p++;
+		while(*p != 0 && !IsGroupChar(*p)) {
+			if (*p == SUFFIX_CHR) {
+				p = lang->suffixes[p[1]-1].txt;
+			}
+			buf2[wlen++] = *p++;
+		}
 
 		buf2[wlen] = 0;
 	}
@@ -367,7 +381,7 @@ void FormatText(char * text_key, Dictionary * dict, char * text_arguments[], int
 
 //	p = encoded;
 	for(; ;) {
-		for(p2 = p; *p2 != 0 && (*p2 < CAT_FIRST_CHAR || *p2 >= CAT_FIRST_CHAR+MAX_CAT_COUNT) && *p2 != '%' && *p2 != WORD_CHR; p2++);
+		for(p2 = p; *p2 != 0 && (*p2 < CAT_FIRST_CHAR || *p2 >= CAT_FIRST_CHAR+MAX_CAT_COUNT) && *p2 != '%' && *p2 != WORD_CHR && *p2 != SUFFIX_CHR; p2++);
 		if (p2 != p) out_fn(ctx, p, p2 - p);
 		p = p2;
 		c = *p++;
@@ -428,6 +442,39 @@ int OutMem(void * ctx, char * text, int len)
 	while(len-->0) *p++ = *text++;
 	*p_p = p;
 	return 0;
+}
+
+void DictDescribeWord(Dictionary * dict, WordClass cls, Text word_name)
+{
+	Text txt;
+//	Grammeme g[MAX_CAT_COUNT];
+	GrammaticalCategory i, cat_no;
+	GrammaticalCategoryDef * cat;
+	SentenceState state;
+	Grammeme j;
+	char buf[128];
+	int word_no;
+	char * s;
+
+	WordClassDef * def = &dict->lang->word_classes[cls];
+	word_no = FindWordIndex(dict->words, dict->word_count, word_name);
+	txt = DictWordAtIndex(dict, word_no);
+
+	SentenceStateInit(&state);
+//	for(i = 0; i<def->used_categories_count; i++) g[i] = 0;
+
+//	for(i=def->used_categories_count+1; i>0; i--) {
+	i = 2;
+	cat_no = def->used_categories[i-1];
+	cat = &dict->lang->categories[cat_no];
+	for(j=1; j<=cat->grammeme_count; j++) {
+		state.state[cat_no] = j-1;
+		s = buf;
+		FormatWord(txt, dict->lang, &state, OutMem, &s);
+		*s = 0;
+		PrintFmt("%s: %s\n", cat->grammemes[j], buf);
+	}
+//	}
 }
 
 void DictTest(Dictionary * dict, char * filename)

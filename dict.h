@@ -34,5 +34,6 @@ typedef int (*DictOutFn)(void * ctx, char * text, int len);
 void FormatText(char * text_key, Dictionary * dict, char * text_arguments[], int * num_args, DictOutFn out_fn, void * ctx);
 
 void DictTest(Dictionary * dict, char * filename);
+void DictDescribeWord(Dictionary * dict, WordClass cls, Text word_name);
 
 #endif

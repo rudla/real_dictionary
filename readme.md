@@ -36,87 +36,35 @@ Word classes
 ------------
 Word classes (like noun, verb, adjective, adverb, pronoun, preposition) are defined in `classes` section.
 
- 
+Extensions
+----------
+Common word suffix sets may be specified in `suffixes` section.
+Name of the set is specified before double colon.
 
-Cases are stored as special codes in text. They are stripped off when generating the text.
- 
-Count
-=====
-one     (1)
-several (#)
-
-Gender
-======
-man    (he)  ^
-woman  (she) +
-thing  (it) @
-
-Article
-=======
-Defines, if we should use 'a' or 'an' before the word.
-
-
-Gramatical cases
-================
-
-Gramatical case is defined using <>.
-
-In Czech
---------
-nominativ (kdo, co?)
-genitiv (koho, čeho?)
-dativ (komu, čemu?)
-akuzativ (koho, co?)
-vokativ (volání, oslovení)
-lokál neboli lokativ (o kom, o čem?)
-instrumentál (kým, čím?)
-
-Words implying a case
-=====================
-:::::
-<en>: are<#>, many<#>, some<#>
-<cz>: jsou<#>, kolik<čeho#>, nějaké<co#>, on<^>
-::::::
-
-Adjectives & Nouns
-==================
-
-It is possible to define, that a word is adjective and should be modified based on following noun.
-In general, word should be modified based on some characteristics, defined by following word.
-
-
-Words
-=====
-
-Words are set of word cases.
-At the beginning is the common part of a word.
-In word definition, we may use # directly.
-
-:::::
-<cs>Tiskárn<co>a#y<čeho>y#en<koho>u#y 
-<en>Printer#s
-:::::
-
-Categories
+Dictionary
 ==========
 
-Words may be categorized. At least nouns, verbs etc. may be specified.
+Words
+----- 
+In words section, words that can be used in texts are specified.
 
+'''
+key ":" [forced grammemes] chars([grammemes]chars)*   [suffixes]
+'''
 
-Examples
-========
+Sentences
+---------
 
-obj: tiskárna
+Texts
+=====
+When specifying text, grammemes may be specified using angle braces <>. When 
+formatting the text, thay will be removed, but they will be used to find appropriate word forms.
 
-"<cs>Kolik <čeho#>[obj] je k dispozici?"  => "<cs>Kolik [obj] je k dispozici?"
-"<cs>Prosím, zapněte<koho> [obj]!"
+Code   | Meaning
+-------|-------------
+<x>    | Grammeme. Specified grammeme is activated in subsequent text. (Unless other grammeme from same category is specified.)
+%1-%9  | Numeric arguments.
+%A-%Z  | Word arguments
+%^A    | Use grammemes forced by specified word argument.
+`word  | Word referenced by it's key. This makes sure, the word will be properly inflected, typically based on argument.
 
-"Kolik tiskáren je k dispozici?"
-"Prosím, zapněte tiskárnu."
-
-obj: printer
-"<en>How many <what#>[obj] are available?"
-
-"How many printers are available?"
-
-"<en>How many <what#>[obj] are available?"

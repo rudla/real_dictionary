@@ -1,14 +1,14 @@
 ﻿== categories ==
--- number
+-- číslo
 1           ; jednotné (jeden)
 #	        ; množné   (několik)
 
--- gender
+-- rod
 ^           ; mužský 
 +           ; ženský 
 @           ; střední
 
--- pad
+-- pád
 kdo           ;1. kdo, co      (mladý muž, mladý stát, mladá žena, mladé zvíře)
 čí            ;2. koho, čeho
 komu          ;3. komu, čemu
@@ -17,15 +17,15 @@ osl           ;5. oslovení
 o             ;6. (o) kom, (o) čem
 kým           ;7. kým, čím
 
--- cas
+-- čas
 prit        ; přítomný
 min			; minulý
 bud         ; budoucí
 
 -- osoba
-já		;v mn. my
-ty		;vy
-on		;oni
+já		;1. v mn. my
+ty		;2.       vy
+on		;3.       oni
 
 -- vid
 dokon		;dokonavý
@@ -33,13 +33,13 @@ nedokon		;nedokonavý
 
 -- zpusob
 =           ;oznamovací
-!           ;rozkayovací
+!           ;rozkazovací
 ?           ;tázací
 
 == classes ==
-podst: <number><gender><pad> 
-prid: <number><gender><pad>
-slov: <osoba><number><cas><zpusob><gender><vid>
+podst: <číslo><pád><rod> 
+prid:  <číslo><rod><pád>
+slov:  <osoba><rod><čas><zpusob><vid>
 
-== suffixes
-
+== suffixes ==
++na: -na<čí>-ny<komu>-ně<co>-nu<osl>-no<o>-ně<kým>-nou<#><kdo>-ny<čí>-ny<komu>-nám<co>-ny

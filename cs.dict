@@ -1,11 +1,11 @@
 ﻿== words ==
 -- podst
-man: <^>muž<čí>-e<komu>-i<co>-e<#><kdo>-i<čí>-ů<komu>-ům<co>-e
+man: <^>muž<čí>-e<komu>-i<co>-e<osl>-i<o>-i<kým>-em<#><kdo>-i<čí>-ů<komu>-ům<co>-e
 child: <@>dítě<čí>-te<komu>-ti<co>-<#><kdo>dět-i<čí>-í<komu>-em<co>-i
-woman:       <+>že-na<čí>-ny<komu>-ně<co>-nu<osl>-no<o>-ně<kým>-nou<#><kdo>-ny<čí>-ny<komu>-nám<co>-ny
-printer: <+>tiskár-na<čí>-ny<komu>-ně<co>-nu<osl>-no<o>-ně<kým>-nou<#><kdo>-ny<čí>-ny<komu>-nám<co>-ny
+woman: <+>že<+na>
+printer: <+>tiskár<+na>
 computer: <^>počítač<čí>-e<#><čí>-ů
-
+ 
 -- prid
 young: mlad-ý<co>-ého<#>-é<1+><kdo>-á<co>-ou<#><co>-é
 

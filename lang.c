@@ -16,7 +16,12 @@ void CutEnd(char * line, char c)
 ***********************************************************/
 //$L
 
-void LangSetCount(SentenceState * state, Int32 n)
+void LangSetCountOneMany(SentenceState * state, Int32 n)
+/*
+Purpose:
+	The function sets the count grammatical category based on a number.
+	This is for languages, that use one and many category.
+*/
 {
 	if (n == 1) {
 		state->state[0] = 0;
@@ -28,8 +33,9 @@ void LangSetCount(SentenceState * state, Int32 n)
 void LangInit(Language * lang)
 {
 	lang->category_count = 0;
-	lang->set_count_fn = LangSetCount;
+	lang->set_count_fn = LangSetCountOneMany;
 	lang->word_class_count = 0;
+	lang->suffix_count = 0;
 }
 
 void LangPrint(Language * lang)
@@ -46,6 +52,7 @@ void LangPrint(Language * lang)
 		}
 		printf("\n");
 	}
+
 }
 
 GrammaticalCategory LangAddGrammaticalCategory(Language * lang, Text name)
@@ -106,6 +113,15 @@ Bool LangFindGrammeme(Language * lang, Text txt, GrammaticalCategory * p_categor
 	return false;
 }
 
+void ParseKey(Text txt, Text * p_key, Text * p_rest)
+{
+	Text p, s;
+	s = p = SkipSpaces(txt);
+	while(*p != 0 && *p != ':') p++;
+	*p_key = StrAllocLen(s, p-s);
+	*p_rest = SkipSpaces(p+1);
+}
+
 WordClass LangAddWordClass(Language * lang, Text txt)
 {
 	Text p, s;
@@ -113,13 +129,10 @@ WordClass LangAddWordClass(Language * lang, Text txt)
 	WordClass idx = lang->word_class_count;
 	WordClassDef * wcls = &lang->word_classes[idx];
 
-	s = p = SkipSpaces(txt);
-	while(*p != 0 && *p != ':') p++;
-	wcls->name = StrAllocLen(s, p-s);
+	ParseKey(txt, &wcls->name, &p);
 	wcls->used_categories_count = 0;
 
 	if (*p != 0) {
-		p = SkipSpaces(p+1);
 		while(*p == '<') {
 			p++;
 			s = p;
@@ -132,9 +145,52 @@ WordClass LangAddWordClass(Language * lang, Text txt)
 		}
 	}
 
+	lang->word_class_count++;
 	return idx;
 }
 
+Bool LangFindWordClass(Language * lang, Text name, WordClass * p_cls)
+{
+	WordClass cid;
+	WordClassDef * def;
+	for(cid = 0; cid < lang->word_class_count; cid++) {
+		def = &lang->word_classes[cid];
+		if (strcmp(name, def->name) == 0) {
+			*p_cls = cid;
+			return true;
+		}
+	}
+	return false;
+}
+
+char * LangEncodeText(Language * lang, Dictionary * dict, char * text);
+
+void LangAddSuffix(Language * lang, Text txt)
+{
+	Text p;
+	WordSuffixDef * suff = &lang->suffixes[lang->suffix_count];
+
+	ParseKey(txt, &suff->name, &p);
+	suff->txt = LangEncodeText(lang, NULL, p);
+
+	lang->suffix_count++;
+	
+}
+
+Bool LangFindSuffix(Language * lang, Text txt, int * p_suffix)
+{
+	int i;
+
+	ASSERT(lang != NULL);
+
+	for (i = 0; i<lang->suffix_count; i++) {
+		if (StrEqual(txt, lang->suffixes[i].name)) {
+			*p_suffix = i;
+			return true;
+		}
+	}
+	return false;
+}
 
 void LangLoad(Language * lang, char * file)
 {
@@ -147,32 +203,35 @@ void LangLoad(Language * lang, char * file)
 	f = FileOpenReadUTF8(file);
 
 	while (!feof(f)) {
+		line[0] = 0;
 		fgets(line, sizeof(line), f);
 		CutEnd(line, '\n');
 		if (strcmp(line, "== categories ==") == 0) {
 			mode = 1;
 		} else if (strcmp(line, "== classes ==") == 0) {
 			mode = 2;
+		} else if (strcmp(line, "== suffixes ==") == 0) {
+			mode = 3;
 		} else {
-			switch(mode) {
-			case 1:
-				if (line[0] == '-' && line[1] == '-') {
-					c = line+2;
-					while(*c == ' ') c++;
-					category = LangAddGrammaticalCategory(lang, c);
-				} else {
-					CutEnd(line, ';');
-					if (*line != 0) {
+			CutEnd(line, ';');
+			if (*line != 0) {
+				switch(mode) {
+				case 1:
+					if (line[0] == '-' && line[1] == '-') {
+						c = line+2;
+						while(*c == ' ') c++;
+						category = LangAddGrammaticalCategory(lang, c);
+					} else {
 						LangAddGrammeme(lang, category, line);
 					}
-				}
-				break;
-			case 2:
-				CutEnd(line, ';');
-				if (*line != 0) {
+					break;
+				case 2:
 					LangAddWordClass(lang, line);
-				}					
-				break;
+					break;
+				case 3:
+					LangAddSuffix(lang, line);
+					break;
+				}
 			}
 		}
 	}

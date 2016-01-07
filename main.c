@@ -16,6 +16,8 @@ void main()
 	DictInit(&dict, &lang);
 	DictLoad(&dict, "cs.dict");
 
+	DictDescribeWord(&dict, 0, "woman");
+
 	DictFindWord(&dict, "mu\xC5\xBEi", 6, &word_cat, &word_idx, &state);
 	DictFindWord(&dict, "vid\xC3\xADm", 6, &word_cat, &word_idx, &state);
 
