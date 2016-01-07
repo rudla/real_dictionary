@@ -48,9 +48,9 @@ Words
 ----- 
 In words section, words that can be used in texts are specified.
 
-'''
+```
 key ":" [forced grammemes] chars([grammemes]chars)*   [suffixes]
-'''
+```
 
 Sentences
 ---------
@@ -60,11 +60,11 @@ Texts
 When specifying text, grammemes may be specified using angle braces <>. When 
 formatting the text, thay will be removed, but they will be used to find appropriate word forms.
 
-Code   | Meaning
--------|-------------
-<x>    | Grammeme. Specified grammeme is activated in subsequent text. (Unless other grammeme from same category is specified.)
-%1-%9  | Numeric arguments.
-%A-%Z  | Word arguments
-%^A    | Use grammemes forced by specified word argument.
-`word  | Word referenced by it's key. This makes sure, the word will be properly inflected, typically based on argument.
+Code     | Meaning
+---------|-------------
+`<x>`    | Grammeme. Specified grammeme is activated in subsequent text. (Unless other grammeme from same category is specified.)
+`%1-%9`  | Numeric arguments.
+`%A-%Z`  | Word arguments
+`%^A`    | Use grammemes forced by specified word argument.
+``word`  | Word referenced by it's key. This makes sure, the word will be properly inflected, typically based on argument.
 
