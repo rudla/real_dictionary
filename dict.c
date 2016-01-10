@@ -104,8 +104,9 @@ char * LangEncodeText(Language * lang, Dictionary * dict, char * text)
 			if (LangFindGrammeme(lang, id, &category, &grammeme)) {
 				if (i > ENCODE_BUF_SIZE-2) goto overrun;
 				buf[i++] = category+CAT_FIRST_CHAR;		// 1..16 is category character
-				buf[i++] = grammeme;					// to prevent 0
+				buf[i++] = grammeme;
 			} else if (LangFindSuffix(lang, id, &suffix)) {
+				if (i > ENCODE_BUF_SIZE-2) goto overrun;
 				buf[i++] = SUFFIX_CHR;
 				ASSERT(suffix < 128); // TODO: Encode as UTF-8 character
 				buf[i++] = suffix+1;
@@ -201,13 +202,13 @@ void OutPrint(void * ctx, char * text, int len)
 void SentenceStateInit(SentenceState * state)
 {
 	int i;
-	for(i=0; i<MAX_CAT_COUNT; i++) state->state[i] = 0;
+	for(i=0; i<LANG_MAX_CATEGORY_COUNT; i++) state->state[i] = 0;
 }
 
 int SentenceStateCmp(SentenceState * state1, SentenceState * state2)
 {
 	int i;
-	for(i=0; i<MAX_CAT_COUNT; i++) {
+	for(i=0; i<LANG_MAX_CATEGORY_COUNT; i++) {
 		if (state1->state[i] != 255 && state1->state[i] != state2->state[i]) return 0;
 	}
 	return 1;
@@ -215,7 +216,7 @@ int SentenceStateCmp(SentenceState * state1, SentenceState * state2)
 
 int IsGroupChar(char c)
 {
-	return c >= CAT_FIRST_CHAR && c < CAT_FIRST_CHAR+MAX_CAT_COUNT;
+	return c >= CAT_FIRST_CHAR && c < CAT_FIRST_CHAR+LANG_MAX_CATEGORY_COUNT;
 }
 
 int DictFindWord(Dictionary * dict, char * word, UInt16 word_len, int * p_word_cat, int * p_word_idx, SentenceState * state)
@@ -381,7 +382,7 @@ void FormatText(char * text_key, Dictionary * dict, char * text_arguments[], int
 
 //	p = encoded;
 	for(; ;) {
-		for(p2 = p; *p2 != 0 && (*p2 < CAT_FIRST_CHAR || *p2 >= CAT_FIRST_CHAR+MAX_CAT_COUNT) && *p2 != '%' && *p2 != WORD_CHR && *p2 != SUFFIX_CHR; p2++);
+		for(p2 = p; *p2 != 0 && (*p2 < CAT_FIRST_CHAR || *p2 >= CAT_FIRST_CHAR+LANG_MAX_CATEGORY_COUNT) && *p2 != '%' && *p2 != WORD_CHR && *p2 != SUFFIX_CHR; p2++);
 		if (p2 != p) out_fn(ctx, p, p2 - p);
 		p = p2;
 		c = *p++;
@@ -447,7 +448,7 @@ int OutMem(void * ctx, char * text, int len)
 void DictDescribeWord(Dictionary * dict, WordClass cls, Text word_name)
 {
 	Text txt;
-//	Grammeme g[MAX_CAT_COUNT];
+//	Grammeme g[LANG_MAX_CATEGORY_COUNT];
 	GrammaticalCategory i, cat_no;
 	GrammaticalCategoryDef * cat;
 	SentenceState state;

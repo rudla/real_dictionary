@@ -21,6 +21,7 @@ void LangSetCountOneMany(SentenceState * state, Int32 n)
 Purpose:
 	The function sets the count grammatical category based on a number.
 	This is for languages, that use one and many category.
+	This function is a default function used for language.
 */
 {
 	if (n == 1) {
@@ -31,6 +32,10 @@ Purpose:
 }
 
 void LangInit(Language * lang)
+/*
+Purpose:
+	Init language info structure.
+*/
 {
 	lang->category_count = 0;
 	lang->set_count_fn = LangSetCountOneMany;
@@ -38,24 +43,11 @@ void LangInit(Language * lang)
 	lang->suffix_count = 0;
 }
 
-void LangPrint(Language * lang)
-{
-	GrammaticalCategory cid;
-	Grammeme i;
-	GrammaticalCategoryDef * cat;
-
-	for(cid = 0; cid < lang->category_count; cid++) {
-		cat = &lang->categories[cid];
-		printf("-- %s (%d) --\n", cat->name, cat->grammeme_count);
-		for(i=1; i<=cat->grammeme_count; i++) {
-			printf("%s\n", cat->grammemes[i]);
-		}
-		printf("\n");
-	}
-
-}
-
 GrammaticalCategory LangAddGrammaticalCategory(Language * lang, Text name)
+/*
+Purpose:
+	Add new grammatical category to the language.
+*/
 {
 	GrammaticalCategory cid = lang->category_count;
 	GrammaticalCategoryDef * cat = &lang->categories[cid];
@@ -87,12 +79,18 @@ void LangAddGrammeme(Language * lang, GrammaticalCategory category, Text txt)
 
 	cat = &lang->categories[category];
 
-	ASSERT(cat->grammeme_count < MAX_GRAMMEME_COUNT);
+	ASSERT(cat->grammeme_count < LANG_MAX_GRAMMEME_COUNT);
 	cat->grammeme_count++;
 	cat->grammemes[cat->grammeme_count] = StrAlloc(txt);
 }
 
 Bool LangFindGrammeme(Language * lang, Text txt, GrammaticalCategory * p_category, Grammeme * p_grammeme)
+/*
+Purpose:
+	Find grammeme in the language. Grammeme will be searched in all categories.
+	Return true if found, false otherwise.
+	Number of category and grammeme is returned in p_category and p_grammeme variables.
+*/
 {
 	GrammaticalCategory category;
 	Grammeme i;
@@ -238,3 +236,19 @@ void LangLoad(Language * lang, char * file)
 	fclose(f);
 }
 
+void LangPrint(Language * lang)
+{
+	GrammaticalCategory cid;
+	Grammeme i;
+	GrammaticalCategoryDef * cat;
+
+	for(cid = 0; cid < lang->category_count; cid++) {
+		cat = &lang->categories[cid];
+		printf("-- %s (%d) --\n", cat->name, cat->grammeme_count);
+		for(i=1; i<=cat->grammeme_count; i++) {
+			printf("%s\n", cat->grammemes[i]);
+		}
+		printf("\n");
+	}
+
+}

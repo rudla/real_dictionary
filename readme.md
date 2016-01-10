@@ -1,11 +1,11 @@
 ﻿Real Dictionary
 ===============
 
-This is library that is able to format texts in languages with rich morphology and complex compounding.
+This is library that is able to format texts in languages that are inflected.
 You may define language and it's word classes and grammatical cases and their possible values (gramemmes).
 The defined gramemmes may be specified in the text and in the definitions of words, that may be inserted into text.
 
-Appropriate variant of the word will be used when used as an argument in text.   
+Appropriate inflection of the word will be used when used as an argument in text.   
 
 
 Language definition
