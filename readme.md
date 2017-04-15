@@ -58,7 +58,7 @@ Sentences
 Texts
 =====
 When specifying text, grammemes may be specified using angle braces <>. When 
-formatting the text, thay will be removed, but they will be used to find appropriate word forms.
+formatting the text, they will be removed, but they will be used to find appropriate word forms.
 
 Code     | Meaning
 ---------|-------------
